@@ -1,0 +1,2 @@
+https://plato.stanford.edu/entries/turing-machine/
+https://www.liafa.jussieu.fr/~carton/Enseignement/Complexite/MasterInfo/Cours/turing.html
