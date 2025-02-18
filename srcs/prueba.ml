@@ -23,19 +23,20 @@ let speclist =
 	]
 
   
+(* 
 let getNextLine ic =
 	try
 		input_line ic  (* Devuelve la línea leída del archivo *)
 	with e ->
 		close_in_noerr ic;  (* Cierra el canal en caso de error *)
-		raise e  (* Relanza la excepción *)
-
+		raise e  (*Relanza la excepción *)
+*)
 	
 let process_file json_file =
 	let ic = open_in json_file in
 	try
 		while true do
-			let line = getNextLine ic in
+			let line = getNextLine.getNextLine ic in
 			print_endline line;  (* Imprime la línea leída *)
 			flush stdout;  (* Asegura que la salida se escriba en el dispositivo de salida *)
 		done

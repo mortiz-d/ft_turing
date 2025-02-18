@@ -19,12 +19,12 @@ true;;
 
 (* Podemos establecer variables con 'let' *)
 (* Asi establecemos listas [1;2;3;4] *)
-let u = [1; 2; 3; 4];;
-(* val u : int list = [1; 2; 3; 4] *)
+let num_list = [1; 2; 3; 4];;
+(* val num_list : int list = [1; 2; 3; 4] *)
 
 ["this"; "is"; "mambo"];;
 (* - : string list = ["this"; "is"; "mambo"] *)
 
 (* Asi añadimos un valor a la lista *)
-9 :: u;;
+9 :: num_list;;
 (* - : int list = [9; 1; 2; 3; 4] *)
