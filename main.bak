@@ -1,0 +1,61 @@
+from dataclasses import dataclass
+import sys
+import json
+
+movements = {
+    'RIGHT': 1,
+    'LEFT': -1
+}
+
+@dataclass
+class DATA :
+    input: str
+    position : int
+    file : object
+
+# δ(q,a)=(p,b,D)
+# (State,simbol read) = (new state, symbol wrote, Movement)
+def action(data , state):
+    options = data.file["transitions"]
+    actions = options[state]
+    new_state = ""
+    
+    
+    res = [t for t in actions if t['read'] == data.input[data.position]]
+    if len(res) == 1:
+        res = res[0]
+        data.input[data.position] = res["write"] # write the new symbol on tape
+        new_state = res["to_state"] 
+        print(data.position)
+        data.position += movements[res["action"]] #movemos el tapeheader a donde diga la instruccion
+        if (new_state in data.file["finals"]):
+            print("encontre el final!")
+            return
+        action(data,new_state)
+    else:
+        print("ERROR NO HE ENCONTRADO UNA ACCION PARA UNA PARTE")
+    return
+
+def process_tape(path):
+    with open(path, "r") as file:
+        data = json.load(file)
+    return data
+    
+
+def main(args):
+    tape = "111-11="
+    data = DATA(list(tape),0,process_tape(str(args[0])))
+
+    action(data ,data.file["initial"])
+    print(data.input)
+    return
+
+
+    print("You passed:", args)
+    #for c in tape:
+    #    action(data ,data.file["initial"] , c)
+        #print ("char : ", c)
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))
