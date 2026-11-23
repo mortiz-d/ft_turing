@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import sys
 import json
+import argparse
 
 movements = {
     'RIGHT': 1,
@@ -21,6 +22,7 @@ class ACTION :
 
 @dataclass
 class DATA :
+    debug:int
     name: str
     tape : list
     file : object
@@ -56,48 +58,30 @@ class DATA :
 
 
 def find_action(actions, state, symbol):
-    return next(
-        (a for a in actions
-         if a.state == state and a.symbol == symbol),
-        None
-    )
+    return next((a for a in actions if a.state == state and a.symbol == symbol), None )
 
 # δ(q⁰,a)=(q¹,b,D)
 # (State,simbol read) = (new state, symbol wrote, Movement)
 def action(data):
-
     operation = find_action(data.transitions,data.curr_state,data.tape[data.position])
-    data.show_tape()
-    print( "      ", end="")
-    operation.show()
-    # print (operation)
 
-    
-
+    if operation is not None:
+        nsym = operation.write
+        nstat = operation.new_state
+        data.tape[data.position] = nsym
+        data.position += operation.movement
+        if data.position >= len(data.tape):
+            data.tape.append(data.blank)
+        data.curr_state = nstat
+        data.show_tape()
+        print( "      ", end="")
+        operation.show()
+        
+        if data.curr_state not in data.finals:
+            action(data)
+    else :
+        print ("aqui no hay nada que hacer")
     return
-
-
-
-
-    # options = data.file["transitions"]
-    # actions = options[state]
-    # new_state = ""
-    
-    
-    # res = [t for t in actions if t['read'] == data.tape[data.position]]
-    # if len(res) == 1:
-    #     res = res[0]
-    #     data.tape[data.position] = res["write"] # write the new symbol on tape
-    #     new_state = res["to_state"] 
-    #     print(data.position)
-    #     data.position += movements[res["action"]] #movemos el tapeheader a donde diga la instruccion
-    #     if (new_state in data.file["finals"]):
-    #         print("encontre el final!")
-    #         return
-    #     action(data,new_state)
-    # else:
-    #     print("ERROR NO HE ENCONTRADO UNA ACCION PARA UNA PARTE")
-    # return
 
 
 def parse_transitions(transitions):
@@ -129,14 +113,29 @@ def process_tape(path, new_tape):
         transitions=  parse_transitions(file_data["transitions"]),
         finals= file_data["finals"],
         states= file_data["states"],
+        debug= 9,
         alphabet = file_data["alphabet"])
     return data
-    
+
+def show_help():
+    print("usage: ft_turing [-h] jsonfile input")
+    print("positional arguments:")
+    print("jsonfile     json description of the machine")
+    print("input        input of the machine\n")
+    print("optional arguments:")
+    print("-h, --help show this help message and exit")
 
 
-def main(args):
+def main(argv=None):
 
-    data = process_tape(str(args[0]), str(args[1]))
+    parser = argparse.ArgumentParser(prog="ft_turing",description="",usage="ft_turing [-h] jsonfile input")
+    parser.add_argument("jsonfile",help="json description of the machine")
+    parser.add_argument("input",help="input of the machine")
+
+    args = parser.parse_args(argv)
+
+
+    data = process_tape(str(args.jsonfile), str(args.input))
     data.show()
     
     action(data)
