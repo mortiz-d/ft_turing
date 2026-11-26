@@ -125,24 +125,31 @@ def parse_transitions(transitions):
 
     return actions
 
-def process_tape(path, new_tape):
-    with open(path, "r") as file:
-        file_data = json.load(file)
+def get_filedata(path):
+    try:
+        with open(path, "r") as file:
+            return json.load(file)
+    except (OSError, json.JSONDecodeError):
+        print("Error opening "+path+ " : "+json.JSONDecodeError)
+        return None
 
-    return build_data(file_data, new_tape)
+def process_tape(path, new_tape):
+    return build_data(get_filedata(path), new_tape)
 
 def build_data(file_data, new_tape):
-    data = DATA(name= file_data["name"],
-        file = file_data, 
-        position= 0, 
-        curr_state= file_data["initial"],
-        blank = file_data["blank"], 
-        transitions=  parse_transitions(file_data["transitions"]),
-        finals= file_data["finals"],
-        states= file_data["states"],
-        debug= 9,
-        alphabet = file_data["alphabet"])
-    return list(new_tape), data
+    if file_data is None:
+        return None, None
+    
+    return list(new_tape), DATA(name= file_data["name"],
+                                file = file_data, 
+                                position= 0, 
+                                curr_state= file_data["initial"],
+                                blank = file_data["blank"], 
+                                transitions=  parse_transitions(file_data["transitions"]),
+                                finals= file_data["finals"],
+                                states= file_data["states"],
+                                debug= 9,
+                                alphabet = file_data["alphabet"])
 
 
 
@@ -169,11 +176,13 @@ def main(argv=None):
 
     args = process_arguments(argv)
     tape, data = process_tape(args.jsonfile, args.input)
+    if tape is None and data is None:
+        return 1
     data.show()
     
     result = RESULT(tape=tape,state=data.curr_state,position=data.position,valid=True)
     while result.state not in data.finals and result.valid is True :
-        
+
         operation = find_action(data.transitions,result.state,result.tape[result.position])
         result = new_action(operation ,result)
 
