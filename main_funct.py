@@ -31,9 +31,7 @@ class ACTION :
 
 @dataclass(frozen=True)
 class DATA :
-    debug:int | None
     name: str | None
-    file : object | None
     position : int | None
     curr_state: str | None
     blank: str | None
@@ -141,14 +139,12 @@ def build_data(file_data, new_tape):
         return None, None
     
     return list(new_tape), DATA(name= file_data.get("name"),
-                                file = file_data, 
                                 position= 0, 
                                 curr_state= file_data.get("initial"),
                                 blank = file_data.get("blank"), 
                                 transitions=  parse_transitions(file_data.get("transitions")),
                                 finals= file_data.get("finals"),
                                 states= file_data["states"],
-                                debug= 9,
                                 alphabet = file_data.get("alphabet"))
 
 
@@ -171,75 +167,30 @@ def check_tape_boundraries(result,blank):
                     position=0,
                     valid=result.valid)
     return result
-'''
-    debug:int
-    name: str
-    file : object
-    position : int
-    curr_state: str
-    blank: str
-    transitions: dict
-    finals: dict
-    states: dict
-    alphabet : dict
 
-    state : str | None
-    symbol : str | None
-    new_state : str | None
-    write: str | None
-    movement: int | None
-    movement_str: str | None
-    
-    '''
+def check_Value (values) :
+    for value in values
+        if value is None:
+            raise ValueError("Error : input file data")
+    return
 
-def validate_inputs(tape, data):
-    if tape is None:
-        raise ValueError("Error in Tape: Tape value is None")
-    elif data is None:
-        raise ValueError("Error in Data: Data value is None")
+def validate_inputs(tape, data) -> bool:
+    try:
+        check_Value(list[data,data.file,data.name,data.curr_state,data.blank,data.transition,data.finals,data.states,data.alphabet])
 
-    if data.file is None:
-        raise ValueError("Error in Tape: File value is None")
-    elif data.name is None:
-        raise ValueError("Error in Tape: Name value is None")
-    elif data.curr_state is None:
-        raise ValueError("Error in Tape: Tape value is None")
-    elif data.blank is None:
-        raise ValueError("Error in Tape: Blank value is None")
-    elif data.transitions is None:
-        raise ValueError("Error in Tape: Transition value is None")
-    elif data.finals is None:
-        raise ValueError("Error in Tape: Finals value is None")
-    elif data.states is None:
-        raise ValueError("Error in Tape: States value is None")
-    elif data.alphabet is None:
-        raise ValueError("Error in Tape: Alphabet value is None")
-
-    for transition in data.transitions:
-        if transition.state is None:
-            raise ValueError("Error in Transition: States value is None")
-        elif transition.symbol is None:
-            raise ValueError(f"Error in Transition {transition.state}: Read value is None")
-        elif transition.new_state is None:
-            raise ValueError(f"Error in Transition {transition.state}: to_state value is None")
-        elif transition.write is None:
-            raise ValueError(f"Error in Transition {transition.state}: Write value is None")
-        elif transition.movement_str is None:
-            raise ValueError(f"Error in Transition {transition.state}: Action value is None")
-
-
-
-    
+        for transition in data.transitions:
+            check_Value(list[transition.state,transition.symbol,transition.new_state,transition.write,transition.movement])
+    except ValueError as error:
+        print(error)
+        return False
+    return True
 
 def main(argv=None):
 
     args = process_arguments(argv)
     tape, data = process_tape(args.jsonfile, args.input)
 
-    try:
-        validate_inputs(tape, data)
-    except ValueError as error:
-        print(error)
+    if validate_inputs(tape, data) is False:
         return 1
     
     data.show()
