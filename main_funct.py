@@ -31,9 +31,7 @@ class ACTION :
 
 @dataclass(frozen=True)
 class DATA :
-    debug:int
     name: str
-    file : object
     position : int
     curr_state: str
     blank: str
@@ -140,18 +138,14 @@ def build_data(file_data, new_tape):
     if file_data is None:
         return None, None
     
-    return list(new_tape), DATA(name= file_data["name"],
-                                file = file_data, 
+    return list(new_tape), DATA(name= file_data["name"], 
                                 position= 0, 
                                 curr_state= file_data["initial"],
                                 blank = file_data["blank"], 
                                 transitions=  parse_transitions(file_data["transitions"]),
                                 finals= file_data["finals"],
                                 states= file_data["states"],
-                                debug= 9,
                                 alphabet = file_data["alphabet"])
-
-
 
 def process_arguments(argv):
     parser = argparse.ArgumentParser(prog="ft_turing",description="",usage="ft_turing [-h] jsonfile input")
@@ -186,7 +180,7 @@ def main(argv=None):
         operation = find_action(data.transitions,result.state,result.tape[result.position])
         result = new_action(operation ,result)
 
-        if not result.valid
+        if not result.valid:
             break
         result = check_tape_boundraries(result, data.blank)
         show_step(result,operation)
