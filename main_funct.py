@@ -19,28 +19,28 @@ class RESULT:
 
 @dataclass(frozen=True)
 class ACTION :
-    state : str
-    symbol : str
-    new_state : str
-    write: str
-    movement: int
-    movement_str: str
+    state : str | None
+    symbol : str | None
+    new_state : str | None
+    write: str | None
+    movement: int | None
+    movement_str: str | None
 
     def show(self):
         print("("+self.state+", "+self.symbol+") -> (" + self.new_state+", "+self.write+", "+self.movement_str+")")
 
 @dataclass(frozen=True)
 class DATA :
-    debug:int
-    name: str
-    file : object
-    position : int
-    curr_state: str
-    blank: str
-    transitions: dict
-    finals: dict
-    states: dict
-    alphabet : dict
+    debug:int | None
+    name: str | None
+    file : object | None
+    position : int | None
+    curr_state: str | None
+    blank: str | None
+    transitions: dict | None
+    finals: dict | None
+    states: dict | None
+    alphabet : dict | None
 
     def show(self):
         print("==========================")
@@ -116,11 +116,11 @@ def parse_transitions(transitions):
         for t in transitions_list:
             actions.append(ACTION(
                 state=state,
-                symbol=t["read"],
-                new_state=t["to_state"],
-                write=t["write"],
-                movement_str=t["action"],
-                movement=movements[t["action"]]
+                symbol=t.get("read"),
+                new_state=t.get("to_state"),
+                write=t.get("write"),
+                movement_str=t.get("action"),
+                movement=movements[t.get("action")]
             ))
 
     return actions
@@ -140,16 +140,16 @@ def build_data(file_data, new_tape):
     if file_data is None:
         return None, None
     
-    return list(new_tape), DATA(name= file_data["name"],
+    return list(new_tape), DATA(name= file_data.get("name"),
                                 file = file_data, 
                                 position= 0, 
-                                curr_state= file_data["initial"],
-                                blank = file_data["blank"], 
-                                transitions=  parse_transitions(file_data["transitions"]),
-                                finals= file_data["finals"],
+                                curr_state= file_data.get("initial"),
+                                blank = file_data.get("blank"), 
+                                transitions=  parse_transitions(file_data.get("transitions")),
+                                finals= file_data.get("finals"),
                                 states= file_data["states"],
                                 debug= 9,
-                                alphabet = file_data["alphabet"])
+                                alphabet = file_data.get("alphabet"))
 
 
 
@@ -171,13 +171,77 @@ def check_tape_boundraries(result,blank):
                     position=0,
                     valid=result.valid)
     return result
+'''
+    debug:int
+    name: str
+    file : object
+    position : int
+    curr_state: str
+    blank: str
+    transitions: dict
+    finals: dict
+    states: dict
+    alphabet : dict
+
+    state : str | None
+    symbol : str | None
+    new_state : str | None
+    write: str | None
+    movement: int | None
+    movement_str: str | None
+    
+    '''
+
+def validate_inputs(tape, data):
+    if tape is None:
+        raise ValueError("Error in Tape: Tape value is None")
+    elif data is None:
+        raise ValueError("Error in Data: Data value is None")
+
+    if data.file is None:
+        raise ValueError("Error in Tape: File value is None")
+    elif data.name is None:
+        raise ValueError("Error in Tape: Name value is None")
+    elif data.curr_state is None:
+        raise ValueError("Error in Tape: Tape value is None")
+    elif data.blank is None:
+        raise ValueError("Error in Tape: Blank value is None")
+    elif data.transitions is None:
+        raise ValueError("Error in Tape: Transition value is None")
+    elif data.finals is None:
+        raise ValueError("Error in Tape: Finals value is None")
+    elif data.states is None:
+        raise ValueError("Error in Tape: States value is None")
+    elif data.alphabet is None:
+        raise ValueError("Error in Tape: Alphabet value is None")
+
+    for transition in data.transitions:
+        if transition.state is None:
+            raise ValueError("Error in Transition: States value is None")
+        elif transition.symbol is None:
+            raise ValueError(f"Error in Transition {transition.state}: Read value is None")
+        elif transition.new_state is None:
+            raise ValueError(f"Error in Transition {transition.state}: to_state value is None")
+        elif transition.write is None:
+            raise ValueError(f"Error in Transition {transition.state}: Write value is None")
+        elif transition.movement_str is None:
+            raise ValueError(f"Error in Transition {transition.state}: Action value is None")
+
+
+
+    
 
 def main(argv=None):
 
     args = process_arguments(argv)
     tape, data = process_tape(args.jsonfile, args.input)
-    if tape is None and data is None:
+
+    try:
+        validate_inputs(tape, data)
+    except ValueError as error:
+        print(error)
         return 1
+    
     data.show()
     
     result = RESULT(tape=tape,state=data.curr_state,position=data.position,valid=True)
@@ -186,7 +250,7 @@ def main(argv=None):
         operation = find_action(data.transitions,result.state,result.tape[result.position])
         result = new_action(operation ,result)
 
-        if not result.valid
+        if not result.valid:
             break
         result = check_tape_boundraries(result, data.blank)
         show_step(result,operation)
