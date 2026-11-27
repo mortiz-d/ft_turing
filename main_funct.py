@@ -19,26 +19,26 @@ class RESULT:
 
 @dataclass(frozen=True)
 class ACTION :
-    state : str
-    symbol : str
-    new_state : str
-    write: str
-    movement: int
-    movement_str: str
+    state : str | None
+    symbol : str | None
+    new_state : str | None
+    write: str | None
+    movement: int | None
+    movement_str: str | None
 
     def show(self):
         print("("+self.state+", "+self.symbol+") -> (" + self.new_state+", "+self.write+", "+self.movement_str+")")
 
 @dataclass(frozen=True)
 class DATA :
-    name: str
-    position : int
-    curr_state: str
-    blank: str
-    transitions: dict
-    finals: dict
-    states: dict
-    alphabet : dict
+    name: str | None
+    position : int | None
+    curr_state: str | None
+    blank: str | None
+    transitions: dict | None
+    finals: dict | None
+    states: dict | None
+    alphabet : dict | None
 
     def show(self):
         print("==========================")
@@ -114,11 +114,11 @@ def parse_transitions(transitions):
         for t in transitions_list:
             actions.append(ACTION(
                 state=state,
-                symbol=t["read"],
-                new_state=t["to_state"],
-                write=t["write"],
-                movement_str=t["action"],
-                movement=movements[t["action"]]
+                symbol=t.get("read"),
+                new_state=t.get("to_state"),
+                write=t.get("write"),
+                movement_str=t.get("action"),
+                movement=movements[t.get("action")]
             ))
 
     return actions
@@ -138,14 +138,14 @@ def build_data(file_data, new_tape):
     if file_data is None:
         return None, None
     
-    return list(new_tape), DATA(name= file_data["name"], 
+    return list(new_tape), DATA(name= file_data.get("name"),
                                 position= 0, 
-                                curr_state= file_data["initial"],
-                                blank = file_data["blank"], 
-                                transitions=  parse_transitions(file_data["transitions"]),
-                                finals= file_data["finals"],
+                                curr_state= file_data.get("initial"),
+                                blank = file_data.get("blank"), 
+                                transitions=  parse_transitions(file_data.get("transitions")),
+                                finals= file_data.get("finals"),
                                 states= file_data["states"],
-                                alphabet = file_data["alphabet"])
+                                alphabet = file_data.get("alphabet"))
 
 def process_arguments(argv):
     parser = argparse.ArgumentParser(prog="ft_turing",description="",usage="ft_turing [-h] jsonfile input")
@@ -166,12 +166,31 @@ def check_tape_boundraries(result,blank):
                     valid=result.valid)
     return result
 
+def check_Value (values) :
+    for value in values
+        if value is None:
+            raise ValueError("Error : input file data")
+    return
+
+def validate_inputs(tape, data) -> bool:
+    try:
+        check_Value(list[data,data.file,data.name,data.curr_state,data.blank,data.transition,data.finals,data.states,data.alphabet])
+
+        for transition in data.transitions:
+            check_Value(list[transition.state,transition.symbol,transition.new_state,transition.write,transition.movement])
+    except ValueError as error:
+        print(error)
+        return False
+    return True
+
 def main(argv=None):
 
     args = process_arguments(argv)
     tape, data = process_tape(args.jsonfile, args.input)
-    if tape is None and data is None:
+
+    if validate_inputs(tape, data) is False:
         return 1
+    
     data.show()
     
     result = RESULT(tape=tape,state=data.curr_state,position=data.position,valid=True)
